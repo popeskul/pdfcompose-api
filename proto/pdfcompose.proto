@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "/pdfcompose-api;pdfcompose_api";
+package pdfcompose;
+
+service PdfComposeService {
+  rpc CreatePdf (CreatePdfRequest) returns (CreatePdfResponse) {}
+}
+
+message CreatePdfRequest {
+  bytes file1 = 1;
+  bytes file2 = 2;
+  bytes file3 = 3;
+}
+
+message CreatePdfResponse {
+  bytes pdf = 1;
+}
