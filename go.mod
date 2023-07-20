@@ -1,4 +1,4 @@
-module pdfcompose
+module github.com/popeskul/pdfcompose-api
 
 go 1.20
 
