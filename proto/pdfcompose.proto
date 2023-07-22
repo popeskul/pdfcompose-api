@@ -4,15 +4,24 @@ option go_package = "/pdfcompose-api;pdfcompose_api";
 package pdfcompose;
 
 service PdfComposeService {
-  rpc CreatePdf (CreatePdfRequest) returns (CreatePdfResponse) {}
+  rpc CreatePdf (stream CreatePdfRequest) returns (stream CreatePdfResponse) {}
+}
+
+enum UploadStatusCode {
+  OK = 0;
+  ERROR = 1;
 }
 
 message CreatePdfRequest {
-  bytes file1 = 1;
-  bytes file2 = 2;
-  bytes file3 = 3;
+  oneof data {
+    bytes file_chunk = 1;
+    bool end_of_file = 2;
+  }
 }
 
 message CreatePdfResponse {
-  bytes pdf = 1;
+  oneof data {
+    bytes pdf_chunk = 1;
+    bool end_of_pdf = 2;
+  }
 }

@@ -18,7 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PdfComposeServiceClient interface {
-	CreatePdf(ctx context.Context, in *CreatePdfRequest, opts ...grpc.CallOption) (*CreatePdfResponse, error)
+	CreatePdf(ctx context.Context, opts ...grpc.CallOption) (PdfComposeService_CreatePdfClient, error)
 }
 
 type pdfComposeServiceClient struct {
@@ -29,20 +29,42 @@ func NewPdfComposeServiceClient(cc grpc.ClientConnInterface) PdfComposeServiceCl
 	return &pdfComposeServiceClient{cc}
 }
 
-func (c *pdfComposeServiceClient) CreatePdf(ctx context.Context, in *CreatePdfRequest, opts ...grpc.CallOption) (*CreatePdfResponse, error) {
-	out := new(CreatePdfResponse)
-	err := c.cc.Invoke(ctx, "/pdfcompose.PdfComposeService/CreatePdf", in, out, opts...)
+func (c *pdfComposeServiceClient) CreatePdf(ctx context.Context, opts ...grpc.CallOption) (PdfComposeService_CreatePdfClient, error) {
+	stream, err := c.cc.NewStream(ctx, &PdfComposeService_ServiceDesc.Streams[0], "/pdfcompose.PdfComposeService/CreatePdf", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &pdfComposeServiceCreatePdfClient{stream}
+	return x, nil
+}
+
+type PdfComposeService_CreatePdfClient interface {
+	Send(*CreatePdfRequest) error
+	Recv() (*CreatePdfResponse, error)
+	grpc.ClientStream
+}
+
+type pdfComposeServiceCreatePdfClient struct {
+	grpc.ClientStream
+}
+
+func (x *pdfComposeServiceCreatePdfClient) Send(m *CreatePdfRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *pdfComposeServiceCreatePdfClient) Recv() (*CreatePdfResponse, error) {
+	m := new(CreatePdfResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // PdfComposeServiceServer is the server API for PdfComposeService service.
 // All implementations must embed UnimplementedPdfComposeServiceServer
 // for forward compatibility
 type PdfComposeServiceServer interface {
-	CreatePdf(context.Context, *CreatePdfRequest) (*CreatePdfResponse, error)
+	CreatePdf(PdfComposeService_CreatePdfServer) error
 	mustEmbedUnimplementedPdfComposeServiceServer()
 }
 
@@ -50,8 +72,8 @@ type PdfComposeServiceServer interface {
 type UnimplementedPdfComposeServiceServer struct {
 }
 
-func (UnimplementedPdfComposeServiceServer) CreatePdf(context.Context, *CreatePdfRequest) (*CreatePdfResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreatePdf not implemented")
+func (UnimplementedPdfComposeServiceServer) CreatePdf(PdfComposeService_CreatePdfServer) error {
+	return status.Errorf(codes.Unimplemented, "method CreatePdf not implemented")
 }
 func (UnimplementedPdfComposeServiceServer) mustEmbedUnimplementedPdfComposeServiceServer() {}
 
@@ -66,22 +88,30 @@ func RegisterPdfComposeServiceServer(s grpc.ServiceRegistrar, srv PdfComposeServ
 	s.RegisterService(&PdfComposeService_ServiceDesc, srv)
 }
 
-func _PdfComposeService_CreatePdf_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreatePdfRequest)
-	if err := dec(in); err != nil {
+func _PdfComposeService_CreatePdf_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(PdfComposeServiceServer).CreatePdf(&pdfComposeServiceCreatePdfServer{stream})
+}
+
+type PdfComposeService_CreatePdfServer interface {
+	Send(*CreatePdfResponse) error
+	Recv() (*CreatePdfRequest, error)
+	grpc.ServerStream
+}
+
+type pdfComposeServiceCreatePdfServer struct {
+	grpc.ServerStream
+}
+
+func (x *pdfComposeServiceCreatePdfServer) Send(m *CreatePdfResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *pdfComposeServiceCreatePdfServer) Recv() (*CreatePdfRequest, error) {
+	m := new(CreatePdfRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
-	if interceptor == nil {
-		return srv.(PdfComposeServiceServer).CreatePdf(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pdfcompose.PdfComposeService/CreatePdf",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PdfComposeServiceServer).CreatePdf(ctx, req.(*CreatePdfRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return m, nil
 }
 
 // PdfComposeService_ServiceDesc is the grpc.ServiceDesc for PdfComposeService service.
@@ -90,12 +120,14 @@ func _PdfComposeService_CreatePdf_Handler(srv interface{}, ctx context.Context, 
 var PdfComposeService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "pdfcompose.PdfComposeService",
 	HandlerType: (*PdfComposeServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "CreatePdf",
-			Handler:    _PdfComposeService_CreatePdf_Handler,
+			StreamName:    "CreatePdf",
+			Handler:       _PdfComposeService_CreatePdf_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "pdfcompose.proto",
 }
